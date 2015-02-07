@@ -1,48 +1,59 @@
 /*
 
-Copyright © 2012-2014 Elias Aebi
+Copyright © 2012-2015 Elias Aebi
 
 All rights reserved.
 
 */
 
+#ifndef FOUNDATION_HPP
+#define FOUNDATION_HPP
+
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <math.h>
 
-#ifndef FOUNDATION_HPP
-#define FOUNDATION_HPP
-
-class Position {
-	public:
-	float x, y, z;
-	Position (): x(0.0f), y(0.0f), z(0.0f) {}
-	Position (float x, float y, float z): x(x), y(y), z(z) {}
-};
-float distance (const Position& p1, const Position& p2);
-
-class vec3 {
-	public:
+struct vec3 {
 	float x, y, z;
 	vec3 () {}
 	vec3 (float x, float y, float z): x(x), y(y), z(z) {}
-	vec3 operator + (const vec3& v) {
-		return vec3 (x+v.x, y+v.y, z+v.z);
-	}
-	vec3 operator - (const vec3& v) {
-		return vec3 (x-v.x, y-v.y, z-v.z);
-	}
-	vec3 operator * (float s) {
-		return vec3 (x*s, y*s, z*s);
-	}
-	float length () {
-		return sqrt (x*x + y*y + z*z);
-	}
-	void operator += (const vec3& v) {
-		x += v.x;
-		y += v.y;
-		z += v.z;
-	}
+};
+static bool operator == (const vec3& v1, const vec3& v2) {
+	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
+}
+static bool operator != (const vec3& v1, const vec3& v2) {
+	return !(v1 == v2);
+}
+static vec3 operator + (const vec3& v1, const vec3& v2) {
+	return vec3 (v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
+}
+static vec3 operator - (const vec3& v) {
+	return vec3 (-v.x, -v.y, -v.z);
+}
+static vec3 operator - (const vec3& v1, const vec3& v2) {
+	return v1 + (-v2);
+}
+static vec3 operator * (float s, const vec3& v) {
+	return vec3 (s*v.x, s*v.y, s*v.z);
+}
+static vec3 operator * (const vec3& v, float s) {
+	return s * v;
+}
+static vec3& operator += (vec3& v1, const vec3& v2) {
+	return v1 = v1 + v2;
+}
+static vec3& operator -= (vec3& v1, const vec3& v2) {
+	return v1 = v1 - v2;
+}
+static vec3& operator *= (vec3& v, float s) {
+	return v = s * v;
+}
+static float length (const vec3& v) {
+	return sqrt (v.x*v.x + v.y*v.y + v.z*v.z);
+}
+
+struct mat3 {
+	
 };
 
 class Color {

@@ -287,9 +287,9 @@ void Camera::take_a_picture () {
 	
 	//glLoadIdentity ();
 	if (track) {
-		if (max_distance > 0.0f && (track->position-position).length() > max_distance) {
+		if (max_distance > 0.0f && length(track->position-position) > max_distance) {
 			vec3 direction = track->position - position;
-			float factor = (direction.length() - max_distance) / direction.length();
+			float factor = (length(direction) - max_distance) / length(direction);
 			position += direction * factor;
 		}
 		float dx = track->position.x - position.x;

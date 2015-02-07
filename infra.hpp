@@ -72,8 +72,8 @@ class Light {
 	static Program* program;
 	float size;
 	Color color;
-	public:
-	Position position;
+public:
+	vec3 position;
 	Light (float x, float y, float z);
 	void draw (Texture* color, Texture* normal, Texture* positionmap);
 };

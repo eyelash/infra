@@ -1,6 +1,6 @@
 /*
 
-Copyright © 2012-2014 Elias Aebi
+Copyright © 2012-2015 Elias Aebi
 
 All rights reserved.
 
@@ -10,11 +10,6 @@ All rights reserved.
 #include <stdio.h>
 #include <stdlib.h>
 #include <SOIL/SOIL.h>
-
-// Distance
-float distance (const Position& p1, const Position& p2) {
-	return sqrt ((p2.x-p1.x)*(p2.x-p1.x) + (p2.y-p1.y)*(p2.y-p1.y) + (p2.z-p1.z)*(p2.z-p1.z));
-}
 
 // Projection
 void Projection::perspective (double left, double right, double bottom, double top, double near, double far) {
@@ -371,13 +366,14 @@ Shader::Shader (const char* filename, GLenum type) {
 	int length = ftell (file);
 	rewind (file);
 	// allocate memory and read the file
-	char* source = (GLchar*) malloc (length);
+	GLchar* source = (GLchar*) malloc (length);
 	fread (source, 1, length, file);
+	fclose (file);
 	
 	identifier = glCreateShader (type);
-	const GLchar* const_source = source;
-	glShaderSource (identifier, 1, &const_source, &length);
+	glShaderSource (identifier, 1, &source, &length);
 	glCompileShader (identifier);
+	
 	GLint compile_status;
 	glGetShaderiv (identifier, GL_COMPILE_STATUS, &compile_status);
 	if (compile_status == GL_FALSE) {
@@ -390,7 +386,6 @@ Shader::Shader (const char* filename, GLenum type) {
 	}
 	
 	free (source);
-	fclose (file);
 }
 Shader::~Shader () {
 	glDeleteShader (identifier);
