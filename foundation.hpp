@@ -77,6 +77,8 @@ class Projection {
 class Program;
 class Texture {
 	int texture_unit;
+	Texture (const Texture& texture);
+	Texture& operator = (const Texture& texture);
 public:
 	GLuint identifier;
 	int width, height;
@@ -94,6 +96,18 @@ public:
 
 void draw_2_textures (Texture* t1, Texture* t2, Program* p);
 void draw_3_textures (Texture* t1, Texture* t2, Texture* t3, Program* p);
+
+class Buffer {
+	Buffer (const Buffer& buffer);
+	Buffer& operator = (const Buffer& buffer);
+public:
+	GLuint identifier;
+	Buffer (int size);
+	~Buffer ();
+	void bind ();
+	void unbind ();
+	void set_data (int offset, int size, void* data);
+};
 
 class FramebufferObject {
 	public:

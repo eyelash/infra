@@ -30,6 +30,9 @@ void Projection::orthographic (double left, double right, double bottom, double 
 // Texture
 Program* Texture::program = NULL;
 Texture::Texture (const char* filename) {
+	if (!program) {
+		program = new Program ("shaders/vertex_shader.glsl", "shaders/texture_passthrough.glsl");
+	}
 	identifier = SOIL_load_OGL_texture (filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y|SOIL_FLAG_TEXTURE_REPEATS);
 	if (identifier==0)
 		fprintf (stderr, "Texture::Texture(): failed to load %s: %s\n", filename, SOIL_last_result());
@@ -275,6 +278,28 @@ void draw_3_textures (Texture* t1, Texture* t2, Texture* t3, Program* p) {
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
 	glEnable (GL_DEPTH_TEST);
+}
+
+// Buffer
+Buffer::Buffer (int size) {
+	glGenBuffers (1, &identifier);
+	glBindBuffer (GL_ARRAY_BUFFER, identifier);
+	glBufferData (GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
+}
+Buffer::~Buffer () {
+	glDeleteBuffers (1, &identifier);
+}
+void Buffer::bind () {
+	glBindBuffer (GL_ARRAY_BUFFER, identifier);
+}
+void Buffer::unbind () {
+	glBindBuffer (GL_ARRAY_BUFFER, 0);
+}
+void Buffer::set_data (int offset, int size, void* data) {
+	bind ();
+	glBufferSubData (GL_ARRAY_BUFFER, offset, size, data);
+	unbind ();
 }
 
 // FramebufferObject

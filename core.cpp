@@ -1,6 +1,6 @@
 /*
 
-Copyright © 2012-2014 Elias Aebi
+Copyright © 2012-2015 Elias Aebi
 
 All rights reserved.
 
@@ -88,51 +88,47 @@ void Material::deactivate () {
 }
 
 // Mesh
-Mesh::Mesh (aiMesh* mesh, const aiScene* scene) {
+Mesh::Mesh (aiMesh* mesh, const aiScene* scene): vertex_count(mesh->mNumVertices), buffer(vertex_count*4*sizeof(aiVector3D)), material(scene->mMaterials[mesh->mMaterialIndex]) {
 	if (mesh->mPrimitiveTypes & ~aiPrimitiveType_TRIANGLE) {
 		printf ("Mesh::Mesh: the mesh contains faces that are not triangles\n");
 	}
-	vertex_count = mesh->mNumVertices;
-	// create and bind the buffer
-	glGenBuffers (1, &buffer);
-	glBindBuffer (GL_ARRAY_BUFFER, buffer);
 	printf ("Mesh::Mesh: the mesh contains %d vertices and %d faces\n", vertex_count, mesh->mNumFaces);
-	// allocate video memory and upload the vertices and normals
-	glBufferData (GL_ARRAY_BUFFER, vertex_count*4*sizeof(aiVector3D), NULL, GL_STATIC_DRAW);
-	glBufferSubData (GL_ARRAY_BUFFER, 0, vertex_count*sizeof(aiVector3D), mesh->mVertices);
-	glBufferSubData (GL_ARRAY_BUFFER, vertex_count*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mNormals);
-	glBufferSubData (GL_ARRAY_BUFFER, vertex_count*2*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mTextureCoords[0]);
-	glBufferSubData (GL_ARRAY_BUFFER, vertex_count*3*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mTangents);
-	// unbind the buffer
-	glBindBuffer (GL_ARRAY_BUFFER, 0);
-	// material
-	material = new Material (scene->mMaterials[mesh->mMaterialIndex]);
+	buffer.set_data (0, vertex_count*sizeof(aiVector3D), mesh->mVertices);
+	buffer.set_data (vertex_count*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mNormals);
+	buffer.set_data (vertex_count*2*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mTextureCoords[0]);
+	buffer.set_data (vertex_count*3*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mTangents);
 }
 void Mesh::draw () {
-	material->activate ();
-	// bind the buffer
-	glBindBuffer (GL_ARRAY_BUFFER, buffer);
+	material.activate ();
+	buffer.bind ();
+	
+	// get the indices
+	//int position_index = material.program->get_attribute_location ("in_position");
+	int tangent_index = material.program->get_attribute_location ("in_tangent");
+	//int normal_index = material.program->get_attribute_location ("in_normal");
+	//int texcoord_index = material.program->get_attribute_location ("in_texcoord");
 	
 	// enable vertex arrays and set the sources
 	glEnableClientState (GL_VERTEX_ARRAY);
-	glVertexPointer (3, GL_FLOAT, 0, NULL);
 	glEnableClientState (GL_NORMAL_ARRAY);
-	glNormalPointer (GL_FLOAT, 0, (void*)(vertex_count*sizeof(aiVector3D)));
 	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
+	glEnableVertexAttribArray (tangent_index);
+	glVertexPointer (3, GL_FLOAT, 0, NULL);
+	glNormalPointer (GL_FLOAT, 0, (void*)(vertex_count*sizeof(aiVector3D)));
 	glTexCoordPointer (3, GL_FLOAT, 0, (void*)(vertex_count*2*sizeof(aiVector3D)));
-	glEnableVertexAttribArray (material->program->get_attribute_location("tangent"));
-	glVertexAttribPointer (material->program->get_attribute_location("tangent"), 3, GL_FLOAT, GL_FALSE, 0, (void*)(vertex_count*3*sizeof(aiVector3D)));
+	glVertexAttribPointer (tangent_index, 3, GL_FLOAT, GL_FALSE, 0, (void*)(vertex_count*3*sizeof(aiVector3D)));
 	
 	// do the actual drawing
 	glDrawArrays (GL_TRIANGLES, 0, vertex_count);
+	
 	// disable vertex arrays
 	glDisableClientState (GL_VERTEX_ARRAY);
 	glDisableClientState (GL_NORMAL_ARRAY);
 	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
-	// unbind the buffer
-	glBindBuffer (GL_ARRAY_BUFFER, 0);
-	// deactivate the material
-	material->deactivate ();
+	glDisableVertexAttribArray (tangent_index);
+	
+	buffer.unbind ();
+	material.deactivate ();
 }
 
 // Object
@@ -159,7 +155,7 @@ Object::Object (const char* obj_file) {
 	// create the meshes
 	printf ("Object::Object: the file %s contains %d meshes\n", obj_file, scene->mNumMeshes);
 	for (int i=0; i<scene->mNumMeshes; i++) {
-		meshes.append (Mesh(scene->mMeshes[i], scene));
+		meshes.append (new Mesh(scene->mMeshes[i], scene));
 	}
 	
 /*	// create and bind the buffers
@@ -212,7 +208,7 @@ Object::Object (const char* obj_file) {
 
 void Object::draw () {
 	for (int i=0; i<meshes.count(); i++)
-		meshes[i].draw ();
+		meshes[i]->draw ();
 	
 /*	// bind the buffers
 	glBindBuffer (GL_ARRAY_BUFFER, buffer);

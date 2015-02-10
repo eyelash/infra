@@ -1,6 +1,6 @@
 /*
 
-Copyright © 2012-2014 Elias Aebi
+Copyright © 2012-2015 Elias Aebi
 
 All rights reserved.
 
@@ -35,9 +35,9 @@ class Material {
 
 class Mesh {
 	public:
-	Material* material;
-	GLuint buffer;
 	unsigned int vertex_count;
+	Buffer buffer;
+	Material material;
 	Mesh (aiMesh* mesh, const aiScene* scene);
 	void draw ();
 };
@@ -45,7 +45,7 @@ class Mesh {
 class Object {
 	static Program* material_program;
 public:
-	List<Mesh> meshes;
+	List<Mesh*> meshes;
 	GLuint buffer;
 	GLuint index_buffer;
 	GLuint vertex_count;
