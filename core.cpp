@@ -132,18 +132,7 @@ void Mesh::draw () {
 }
 
 // Object
-Program* Object::material_program = NULL;
 Object::Object (const char* obj_file) {
-	// create the program
-	/*if (!material_program) {
-		Shader* v = new Shader ("shaders/vertex_shader.glsl", GL_VERTEX_SHADER);
-		Shader* f = new Shader ("shaders/material.glsl", GL_FRAGMENT_SHADER);
-		material_program = new Program (v, f);
-		material_program->use ();
-		material_program->set_uniform_int ("colormap", 0);
-		material_program->set_uniform_int ("normalmap", 1);
-	}*/
-	
 	// load the file
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile (obj_file, aiProcess_CalcTangentSpace|aiProcess_Triangulate);
@@ -157,88 +146,11 @@ Object::Object (const char* obj_file) {
 	for (int i=0; i<scene->mNumMeshes; i++) {
 		meshes.append (new Mesh(scene->mMeshes[i], scene));
 	}
-	
-/*	// create and bind the buffers
-	glGenBuffers (1, &buffer);
-	glBindBuffer (GL_ARRAY_BUFFER, buffer);
-	
-	if (scene->mNumMeshes > 1)
-		printf ("Object::Object: the file %s contains %d meshes. Picking the first one called %s\n", obj_file, scene->mNumMeshes, scene->mMeshes[0]->mName.C_Str());
-	// the mesh
-	aiMesh *mesh = scene->mMeshes[1];
-	if (mesh->mPrimitiveTypes & ~aiPrimitiveType_TRIANGLE) {
-		printf ("Object::Object: the file %s contains faces that are not triangles\n", obj_file);
-	}
-	vertex_count = mesh->mNumVertices;
-	face_count = mesh->mNumFaces;
-//	printf ("Object::Object: vertex count %d, face count %d, sizeof(aiVector3D) = %d, sizeof(GLfloat) = %d\n", vertex_count, face_count, sizeof(aiVector3D), sizeof(GLfloat));
-	// allocate video memory and upload the vertices and normals
-	glBufferData (GL_ARRAY_BUFFER, vertex_count*4*sizeof(aiVector3D), NULL, GL_STATIC_DRAW);
-	glBufferSubData (GL_ARRAY_BUFFER, 0, vertex_count*sizeof(aiVector3D), mesh->mVertices);
-	glBufferSubData (GL_ARRAY_BUFFER, vertex_count*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mNormals);
-	glBufferSubData (GL_ARRAY_BUFFER, vertex_count*2*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mTextureCoords[0]);
-	glBufferSubData (GL_ARRAY_BUFFER, vertex_count*3*sizeof(aiVector3D), vertex_count*sizeof(aiVector3D), mesh->mTangents);
-	
-	// unbind the buffers
-	glBindBuffer (GL_ARRAY_BUFFER, 0);
-//	glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	// the textures
-	printf ("has %d UV channels\n", mesh->GetNumUVChannels());
-	colormap = NULL;
-	normalmap = NULL;
-	aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-	if (material->GetTextureCount(aiTextureType_DIFFUSE)) {
-		aiString texture_path;
-		material->GetTexture (aiTextureType_DIFFUSE, 0, &texture_path);
-		printf ("Object::Object(): found diffuse texture: %s\n", texture_path.C_Str());
-		colormap = new Texture (texture_path.C_Str());
-	}
-	if (material->GetTextureCount(aiTextureType_NORMALS)) {
-		aiString texture_path;
-		material->GetTexture (aiTextureType_NORMALS, 0, &texture_path);
-		printf ("Object::Object(): found normals texture: %s\n", texture_path.C_Str());
-		normalmap = new Texture (texture_path.C_Str());
-	}
-	if (scene->mNumTextures > 0) {
-		printf ("the file %s contains %d textures\n", obj_file, scene->mNumTextures);
-		aiTexture *texture = scene->mTextures[0];
-	}*/
 }
 
 void Object::draw () {
 	for (int i=0; i<meshes.count(); i++)
 		meshes[i]->draw ();
-	
-/*	// bind the buffers
-	glBindBuffer (GL_ARRAY_BUFFER, buffer);
-	
-	if (colormap) {
-		glActiveTexture (GL_TEXTURE0);
-		colormap->bind ();
-	}
-	if (normalmap) {
-		glActiveTexture (GL_TEXTURE1);
-		normalmap->bind ();
-	}
-	// enable vertex arrays and set the sources
-	glEnableClientState (GL_VERTEX_ARRAY);
-	glVertexPointer (3, GL_FLOAT, 0, NULL);
-	glEnableClientState (GL_NORMAL_ARRAY);
-	glNormalPointer (GL_FLOAT, 0, (void*)(vertex_count*sizeof(aiVector3D)));
-	glEnableClientState (GL_TEXTURE_COORD_ARRAY);
-	glTexCoordPointer (3, GL_FLOAT, 0, (void*)(vertex_count*2*sizeof(aiVector3D)));
-	glEnableVertexAttribArray (material_program->get_attribute_location("tangent"));
-	glVertexAttribPointer (material_program->get_attribute_location("tangent"), 3, GL_FLOAT, GL_FALSE, 0, (void*)(vertex_count*3*sizeof(aiVector3D)));
-	
-	// do the actual drawing
-	glDrawArrays (GL_TRIANGLES, 0, vertex_count);
-	// disable vertex arrays
-	glDisableClientState (GL_VERTEX_ARRAY);
-	glDisableClientState (GL_NORMAL_ARRAY);
-	glDisableClientState (GL_TEXTURE_COORD_ARRAY);
-	// unbind the buffers
-	glBindBuffer (GL_ARRAY_BUFFER, 0); */
 }
 
 // Instance

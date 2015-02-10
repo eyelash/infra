@@ -25,8 +25,8 @@ class Material {
 	Texture* colormap;
 	Texture* normalmap;
 	Program* program;
-	float hardness;
-	float light_size;
+	//float hardness;
+	//float light_size;
 	Material (aiMaterial* material);
 	~Material ();
 	void activate ();
@@ -43,15 +43,8 @@ class Mesh {
 };
 
 class Object {
-	static Program* material_program;
 public:
 	List<Mesh*> meshes;
-	GLuint buffer;
-	GLuint index_buffer;
-	GLuint vertex_count;
-	GLuint face_count;
-	Texture* colormap;
-	Texture* normalmap;
 	Object (const char* filename);
 	void draw ();
 };
